@@ -176,6 +176,4 @@ const App = memo(function App() {
   );
 }
 
-});
-
 export default App;
