@@ -4,12 +4,14 @@ export function useOptimizedNotifications() {
   const notificationQueue = useRef<Set<string>>(new Set());
   const pendingNotifications = useRef<Map<string, NodeJS.Timeout>>(new Map());
   
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      cancelAllNotifications();
-    };
-  }, [cancelAllNotifications]);
+  const cancelAllNotifications = useCallback(() => {
+    // Clear all scheduled notifications
+    pendingNotifications.current.forEach((timeout) => {
+      clearTimeout(timeout);
+    });
+    pendingNotifications.current.clear();
+    notificationQueue.current.clear();
+  }, []);
 
   const sendNotification = useCallback(async (title: string, options: NotificationOptions) => {
     const notificationId = `${title}-${options.tag || Date.now()}`;
@@ -75,14 +77,12 @@ export function useOptimizedNotifications() {
     }
   }, []);
 
-  const cancelAllNotifications = useCallback(() => {
-    // Clear all scheduled notifications
-    pendingNotifications.current.forEach((timeout) => {
-      clearTimeout(timeout);
-    });
-    pendingNotifications.current.clear();
-    notificationQueue.current.clear();
-  }, []);
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cancelAllNotifications();
+    };
+  }, [cancelAllNotifications]);
 
   return {
     sendNotification,
