@@ -1,7 +1,6 @@
-import { useState, useEffect, memo, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Analytics as VercelAnalytics } from '@vercel/analytics/react';
 import { useDechaTime } from './hooks/useDechaTime';
-import { useSettingsStore } from './stores/settingsStore';
 import { 
   useTheme, 
   useShowProgressBars, 
@@ -30,7 +29,6 @@ import { WakeLockButton } from './components/WakeLockButton';
 import { TimezoneDisplay } from './components/TimezoneDisplay';
 import { NotificationPermission } from './components/NotificationPermission';
 
-// Lazy load heavy modal components for better performance
 const Settings = lazy(() => import('./components/Settings').then(module => ({ default: module.Settings })));
 const TimeConverter = lazy(() => import('./components/TimeConverter').then(module => ({ default: module.TimeConverter })));
 const AlarmManager = lazy(() => import('./components/AlarmManager').then(module => ({ default: module.AlarmManager })));
@@ -49,13 +47,11 @@ const themeBackgrounds = {
 
 type ModalType = 'settings' | 'converter' | 'alarms' | 'calendar' | 'stats' | 'help' | 'multi-timezone' | null;
 
-// Memoized App component to prevent unnecessary re-renders
-const App = memo(function App() {
+function App() {
   const { dechaTime, earthTime } = useDechaTime();
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const { shareTime } = useShare();
 
-  // Optimized selectors to prevent unnecessary re-renders
   const theme = useTheme();
   const displayFormat = useDisplayFormat();
   const showEarthTime = useShowEarthTime();
@@ -66,29 +62,24 @@ const App = memo(function App() {
   const enableHourlyNotifications = useEnableHourlyNotifications();
   const toggleEarthTime = useToggleEarthTime();
 
-  // Initialize hooks
   useAppBadge(dechaTime.hours, enableAppBadge);
   useNotifications(dechaTime);
   useStats();
 
-  // Request notification permission when enabled
   useEffect(() => {
     if (enableHourlyNotifications) {
       requestNotificationPermission();
     }
   }, [enableHourlyNotifications]);
 
-  // Body scroll lock when modal is open - optimized with proper cleanup
   useEffect(() => {
     if (activeModal) {
       document.body.classList.add('modal-open');
-      // Store current scroll position
       const scrollY = window.scrollY;
       document.body.style.top = `-${scrollY}px`;
       document.body.style.overflow = 'hidden';
     } else {
       document.body.classList.remove('modal-open');
-      // Restore scroll position
       const scrollY = document.body.style.top;
       document.body.style.top = '';
       document.body.style.overflow = '';
@@ -102,7 +93,6 @@ const App = memo(function App() {
     };
   }, [activeModal]);
 
-  // Keyboard shortcuts
   useKeyboardShortcuts({
     onSettings: () => setActiveModal(activeModal === 'settings' ? null : 'settings'),
     onConverter: () => setActiveModal('converter'),
@@ -157,7 +147,6 @@ const App = memo(function App() {
           </div>
         </main>
 
-        {/* Modals with lazy loading */}
         <Suspense fallback={null}>
           <Settings isOpen={activeModal === 'settings'} onClose={() => setActiveModal(null)} />
           <TimeConverter isOpen={activeModal === 'converter'} onClose={() => setActiveModal(null)} />
