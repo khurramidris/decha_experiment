@@ -1,4 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
+import { MobileNavigation } from './components/MobileNavigation';
 import { Analytics as VercelAnalytics } from '@vercel/analytics/react';
 import { useDechaTime } from './hooks/useDechaTime';
 import { 
@@ -107,8 +108,8 @@ function App() {
   });
 
   return (
-    <div className={`min-h-screen ${themeBackgrounds[theme]} transition-colors duration-1000`}>
-      <div className="min-h-screen backdrop-blur-3xl flex flex-col">
+    <div className={`min-h-screen ${themeBackgrounds[theme]} transition-colors duration-1000 safe-area`}>
+      <div className="min-h-screen backdrop-blur-3xl flex flex-col safe-area">
         <Header
           onSettingsClick={() => setActiveModal('settings')}
           onConverterClick={() => setActiveModal('converter')}
@@ -156,6 +157,9 @@ function App() {
           <KeyboardHelp isOpen={activeModal === 'help'} onClose={() => setActiveModal(null)} />
           <MultiTimezoneConverter isOpen={activeModal === 'multi-timezone'} onClose={() => setActiveModal(null)} />
         </Suspense>
+
+      {/* Mobile Navigation */}
+      <MobileNavigation onFeatureClick={setActiveModal} />
 
         <InstallBanner />
         <NotificationPermission />

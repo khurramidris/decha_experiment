@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CalendarDays, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useViewport } from '../hooks/useViewport';
 import { useCalendarStore } from '../stores/calendarStore';
 import { CalendarDay } from './CalendarDay';
 import { EventForm } from './EventForm';
@@ -11,6 +12,7 @@ interface CalendarProps {
 }
 
 export function Calendar({ isOpen, onClose }: CalendarProps) {
+  const { isMobile } = useViewport();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -65,9 +67,11 @@ export function Calendar({ isOpen, onClose }: CalendarProps) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 300 }}
             transition={{ type: 'spring', damping: 25 }}
-            className="modal-side-panel w-full max-w-md bg-decha-slate border-l border-white/10"
+            className={`modal-side-panel bg-decha-slate border-l border-white/10 ${
+              isMobile ? 'w-full' : 'w-full max-w-md'
+            }`}
           >
-            <div className="p-6 space-y-6">
+            <div className="p-4 sm:p-6 space-y-6">
               {/* Header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">

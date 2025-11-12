@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, BarChart3, Award, TrendingUp } from 'lucide-react';
+import { useViewport } from '../hooks/useViewport';
 import { useStatsStore } from '../stores/statsStore';
 import { achievements } from '../utils/achievements';
 
@@ -9,6 +10,7 @@ interface StatsPanelProps {
 }
 
 export function StatsPanel({ isOpen, onClose }: StatsPanelProps) {
+  const { isMobile } = useViewport();
   const stats = useStatsStore();
 
   const daysUsed = Math.floor((Date.now() - stats.firstUse) / (1000 * 60 * 60 * 24));
@@ -35,9 +37,11 @@ export function StatsPanel({ isOpen, onClose }: StatsPanelProps) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 300 }}
             transition={{ type: 'spring', damping: 25 }}
-            className="fixed right-0 top-0 h-full w-full max-w-md bg-decha-slate border-l border-white/10 z-50 overflow-y-auto"
+            className={`fixed right-0 top-0 h-full bg-decha-slate border-l border-white/10 z-50 overflow-y-auto ${
+              isMobile ? 'w-full' : 'w-full max-w-md'
+            }`}
           >
-            <div className="p-6 space-y-6">
+            <div className="p-4 sm:p-6 space-y-6">
               {/* Header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">

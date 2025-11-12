@@ -4,6 +4,7 @@ import { X, Clock, ArrowRightLeft, Copy, Check } from 'lucide-react';
 import { earthSecondsToDechaTime, formatDechaTime, formatEarthTime } from '../utils/dechaCalculations';
 import { analytics, AnalyticsEvents } from '../analytics';
 import { useStatsStore } from '../stores/statsStore';
+import { useViewport } from '../hooks/useViewport';
 
 interface TimeConverterProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface TimeConverterProps {
 }
 
 export function TimeConverter({ isOpen, onClose }: TimeConverterProps) {
+  const { isMobile } = useViewport();
   const [mode, setMode] = useState<'earth-to-decha' | 'decha-to-earth'>('earth-to-decha');
   const [earthInput, setEarthInput] = useState('12:00:00');
   const [dechaInput, setDechaInput] = useState('5:00:00');
@@ -92,7 +94,9 @@ export function TimeConverter({ isOpen, onClose }: TimeConverterProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="modal-centered bg-decha-slate border border-white/10 rounded-2xl p-6 w-full max-w-md mx-4"
+            className={`modal-centered bg-decha-slate border border-white/10 rounded-2xl p-4 sm:p-6 w-full mx-4 ${
+              isMobile ? 'max-w-sm' : 'max-w-md'
+            }`}
           >
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">

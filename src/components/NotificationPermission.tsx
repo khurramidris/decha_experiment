@@ -59,7 +59,7 @@ export function NotificationPermission() {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 50 }}
-        className="fixed bottom-4 left-4 right-4 z-50 bg-slate-800 border border-slate-700 rounded-lg p-4 shadow-xl"
+        className="fixed bottom-4 left-4 right-4 z-50 bg-slate-800 border border-slate-700 rounded-lg p-4 shadow-xl safe-bottom"
       >
         <div className="flex items-start gap-3">
           <div className="flex-shrink-0">

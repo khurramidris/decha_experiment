@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Keyboard } from 'lucide-react';
+import { useViewport } from '../hooks/useViewport';
 
 interface KeyboardHelpProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ const shortcuts = [
 ];
 
 export function KeyboardHelp({ isOpen, onClose }: KeyboardHelpProps) {
+  const { isMobile } = useViewport();
   return (
     <AnimatePresence>
       {isOpen && (
@@ -37,9 +39,11 @@ export function KeyboardHelp({ isOpen, onClose }: KeyboardHelpProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="modal-centered bg-decha-slate border border-white/10 rounded-2xl p-6 w-full max-w-md mx-4"
+            className={`modal-centered bg-decha-slate border border-white/10 rounded-2xl p-4 sm:p-6 w-full mx-4 ${
+              isMobile ? 'max-w-sm' : 'max-w-md'
+            }`}
           >
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
               <div className="flex items-center gap-3">
                 <Keyboard className="w-6 h-6 text-decha-blue" />
                 <h2 className="text-2xl font-bold text-white">Keyboard Shortcuts</h2>
@@ -52,7 +56,7 @@ export function KeyboardHelp({ isOpen, onClose }: KeyboardHelpProps) {
               </button>
             </div>
 
-            <div className="space-y-2 max-h-96 overflow-y-auto">
+            <div className="space-y-2 max-h-80 sm:max-h-96 overflow-y-auto">
               {shortcuts.map((shortcut, index) => (
                 <motion.div
                   key={shortcut.key}

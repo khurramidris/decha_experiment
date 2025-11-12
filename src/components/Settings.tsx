@@ -1,7 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings as SettingsIcon, X, Palette, Layout, Clock, BarChart3, Sun } from 'lucide-react';
+import { Settings as SettingsIcon, X, Palette, Layout, Clock, BarChart3, Sun, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useSettingsStore } from '../stores/settingsStore';
 import { Theme, DisplayFormat } from '../types/decha';
+import { useViewport } from '../hooks/useViewport';
+import { useState } from 'react';
 
 interface SettingsProps {
   isOpen: boolean;
@@ -9,6 +11,8 @@ interface SettingsProps {
 }
 
 export function Settings({ isOpen, onClose }: SettingsProps) {
+  const { isMobile } = useViewport();
+  const [currentSection, setCurrentSection] = useState<string | null>(null);
   const {
     theme,
     displayFormat,
@@ -39,6 +43,63 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
     { value: 'both', label: 'Both' },
   ];
 
+  const renderSectionContent = (sectionId: string) => {
+    switch (sectionId) {
+      case 'appearance':
+        return <AppearanceSection theme={theme} setTheme={setTheme} />;
+      case 'display':
+        return <DisplaySection displayFormat={displayFormat} setDisplayFormat={setDisplayFormat} />;
+      case 'time-options':
+        return (
+          <TimeOptionsSection
+            showEarthTime={showEarthTime}
+            showProgressBars={showProgressBars}
+            showDayContext={showDayContext}
+            use24HourEarth={use24HourEarth}
+            toggleEarthTime={toggleEarthTime}
+            toggleProgressBars={toggleProgressBars}
+            toggleDayContext={toggleDayContext}
+            toggle24HourEarth={toggle24HourEarth}
+          />
+        );
+      case 'about':
+        return <AboutSection resetSettings={resetSettings} />;
+      default:
+        return null;
+    }
+  };
+
+  const settingsSections = [
+    {
+      id: 'appearance',
+      title: 'Appearance',
+      icon: Palette,
+      description: 'Themes, colors, and visual preferences',
+      component: 'appearance'
+    },
+    {
+      id: 'display',
+      title: 'Display Format',
+      icon: Layout,
+      description: 'Time format and display options',
+      component: 'display'
+    },
+    {
+      id: 'time-options',
+      title: 'Time Options',
+      icon: Clock,
+      description: 'Earth time, progress bars, and day context',
+      component: 'timeOptions'
+    },
+    {
+      id: 'about',
+      title: 'About',
+      icon: Sun,
+      description: 'App information and reset options',
+      component: 'about'
+    }
+  ];
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -55,9 +116,65 @@ export function Settings({ isOpen, onClose }: SettingsProps) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 300 }}
             transition={{ type: 'spring', damping: 25 }}
-            className="fixed right-0 top-0 h-full w-full max-w-md bg-decha-slate border-l border-white/10 z-50 overflow-y-auto"
+            className={`fixed right-0 top-0 h-full bg-decha-slate border-l border-white/10 z-50 overflow-y-auto ${
+              isMobile ? 'w-full' : 'w-full max-w-sm'
+            }`}
           >
-            <div className="p-6 space-y-6">
+            <div className="p-4 sm:p-6 space-y-6">
+              {/* Back button for nested sections */}
+              {currentSection && (
+                <button
+                  onClick={() => setCurrentSection(null)}
+                  className="flex items-center gap-2 text-decha-blue hover:text-decha-cyan transition-colors"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                  <span>Back to Settings</span>
+                </button>
+              )}
+
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <SettingsIcon className="w-6 h-6 text-decha-blue" />
+                  <h2 className="text-xl sm:text-2xl font-bold text-white">
+                    {currentSection ? settingsSections.find(s => s.id === currentSection)?.title : 'Settings'}
+                  </h2>
+                </div>
+                <button
+                  onClick={onClose}
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <X className="w-6 h-6 text-white/60" />
+                </button>
+              </div>
+
+              {/* Main Settings Menu */}
+              {!currentSection && (
+                <div className="space-y-3">
+                  {settingsSections.map((section) => {
+                    const Icon = section.icon;
+                    return (
+                      <button
+                        key={section.id}
+                        onClick={() => setCurrentSection(section.id)}
+                        className="w-full flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 rounded-xl border border-white/10 transition-colors group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon className="w-5 h-5 text-decha-blue" />
+                          <div className="text-left">
+                            <h3 className="font-semibold text-white">{section.title}</h3>
+                            <p className="text-sm text-white/60">{section.description}</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-white/40 group-hover:text-white/60 transition-colors" />
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Section-specific content */}
+              {currentSection && renderSectionContent(currentSection)}
               {/* Header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
