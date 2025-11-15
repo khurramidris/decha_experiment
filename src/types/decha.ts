@@ -24,6 +24,8 @@ export interface Settings {
   showDayContext: boolean;
   use24HourEarth: boolean;
   enableAppBadge: boolean;
+  enableAnalytics: boolean;
+  reducedMotion: boolean;
   // Notification settings
   enableHourlyNotifications: boolean;
   notificationFrequency: 'every-hour' | 'every-2-hours' | 'every-3-hours';

@@ -1,73 +1,178 @@
-# React + TypeScript + Vite
+# DECHA Time - Decimal Chronological Harmony
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Time designed for the digital age**
 
-Currently, two official plugins are available:
+DECHA (Decimal Chronological Harmony) is a revolutionary time system that simplifies timekeeping with a decimal-based structure. This Progressive Web App (PWA) provides a beautiful, feature-rich interface for experiencing and working with DECHA time.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🕐 What is DECHA Time?
 
-## React Compiler
+DECHA time is a decimal time system where:
+- **1 DECHA day = 10 hours**
+- **1 DECHA hour = 100 minutes**
+- **1 DECHA minute = 100 seconds**
+- **Total: 100,000 DECHA seconds per day** (vs 86,400 Earth seconds)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+This creates a clean, decimal-based time system that's easier to work with mathematically and more intuitive for digital applications.
 
-## Expanding the ESLint configuration
+## ✨ Features
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Core Functionality
+- **Real-time DECHA Time Display** - Live clock showing current DECHA time
+- **Earth Time Conversion** - See corresponding Earth time alongside DECHA time
+- **Time Converter** - Convert between DECHA and Earth time formats
+- **Multi-Timezone Converter** - Convert DECHA time across multiple timezones
+- **Progress Bars** - Visual indicators for hour, minute, and day progress
+- **Day Context** - Shows current day period (night, dawn, morning, midday, afternoon, evening)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Alarms & Notifications
+- **DECHA Alarms** - Set alarms in DECHA time with custom labels
+- **Repeat Options** - Once, daily, weekdays, weekends, or custom days
+- **Quiet Hours** - Configure quiet hours to suppress notifications
+- **Hourly Notifications** - Optional hourly time announcements
+- **Sound Alerts** - Audio notifications for alarms
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Calendar & Events
+- **Event Calendar** - Create and manage events in DECHA time
+- **Day/Week Views** - Multiple calendar view options
+- **Event Management** - Add, edit, delete, and mark events as complete
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Personalization
+- **Multiple Themes** - Navy, Sunset, Matrix, Cosmic, and Minimal themes
+- **Display Formats** - Standard, percentage, or both
+- **Customizable UI** - Toggle Earth time, progress bars, day context
+- **24/12 Hour Format** - Choose Earth time display format
+- **Reduced Motion** - Accessibility option for reduced animations
+
+### Advanced Features
+- **Statistics Panel** - Track usage and achievements
+- **Keyboard Shortcuts** - Power user shortcuts for quick navigation
+- **Share Functionality** - Share current DECHA time
+- **Wake Lock** - Keep screen awake when alarms are active
+- **PWA Support** - Install as a native app on mobile and desktop
+- **Offline Support** - Works offline with service worker caching
+- **App Badge** - Shows current DECHA hour on app icon
+
+### Privacy & Analytics
+- **Optional Analytics** - User-controlled analytics (GA4 & Microsoft Clarity)
+- **Privacy-First** - All analytics are opt-in only
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+ and npm
+
+### Installation
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+
+# Run type checking
+npm run type-check
+
+# Run tests
+npm test
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+The app runs on `http://localhost:5173` by default.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 🏗️ Project Structure
+
 ```
+src/
+├── components/      # React components
+├── hooks/          # Custom React hooks
+├── stores/          # Zustand state management
+├── types/           # TypeScript type definitions
+├── utils/           # Utility functions and calculations
+└── analytics/       # Analytics integration
+```
+
+## 🎯 Key Technologies
+
+- **React 18** - UI framework
+- **TypeScript** - Type safety
+- **Vite** - Build tool and dev server
+- **Zustand** - State management
+- **Tailwind CSS** - Styling
+- **Framer Motion** - Animations
+- **Vite PWA Plugin** - Progressive Web App support
+- **Vitest** - Testing framework
+
+## 📱 PWA Features
+
+DECHA Time is a fully functional Progressive Web App:
+- Installable on mobile and desktop
+- Offline support with service worker
+- App shortcuts for quick actions
+- Responsive design for all screen sizes
+
+## ⌨️ Keyboard Shortcuts
+
+- `S` - Settings
+- `C` - Time Converter
+- `A` - Alarms
+- `L` - Calendar
+- `D` - Stats
+- `M` - Multi-Timezone Converter
+- `?` - Help
+- `Esc` - Close modal
+- `Shift + S` - Share current time
+- `T` - Toggle Earth time display
+
+## 🔧 Configuration
+
+### Analytics Setup
+
+To enable analytics, update the following files with your IDs:
+
+1. **Google Analytics 4** (`src/analytics/ga4.ts`):
+   ```typescript
+   const GA4_MEASUREMENT_ID = 'G-XXXXXXXXXX';
+   ```
+
+2. **Microsoft Clarity** (`src/analytics/clarity.ts`):
+   ```typescript
+   const CLARITY_PROJECT_ID = 'YOUR_CLARITY_ID';
+   ```
+
+Analytics are disabled by default and can be toggled in settings.
+
+## 🧪 Testing
+
+Run the test suite:
+```bash
+npm test
+```
+
+Tests are written using Vitest and cover core DECHA time calculations.
+
+## 📄 License
+
+This project is private and proprietary.
+
+## 🤝 Contributing
+
+This is a private project. For internal contributions, please follow the existing code style and ensure all tests pass.
+
+## 📝 Notes
+
+- DECHA time is synchronized with Earth time (UTC)
+- All alarms and events are stored locally in the browser
+- Settings persist across sessions
+- The app works offline after initial load
+
+---
+
+**Built with ❤️ for the digital age**

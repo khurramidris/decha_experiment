@@ -15,8 +15,8 @@ export function useDechaTime() {
     // Update immediately
     updateTime();
 
-    // Update every 100ms for smooth seconds animation
-    const interval = setInterval(updateTime, 100);
+    // Update at 250ms for smoother progress with reduced CPU
+    const interval = setInterval(updateTime, 250);
 
     return () => clearInterval(interval);
   }, []);

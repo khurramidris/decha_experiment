@@ -9,6 +9,8 @@ export const useShowProgressBars = (): boolean => useSettingsStore(state => stat
 export const useShowDayContext = (): boolean => useSettingsStore(state => state.showDayContext);
 export const useUse24HourEarth = (): boolean => useSettingsStore(state => state.use24HourEarth);
 export const useEnableAppBadge = (): boolean => useSettingsStore(state => state.enableAppBadge);
+export const useEnableAnalytics = (): boolean => useSettingsStore(state => state.enableAnalytics);
+export const useReducedMotion = (): boolean => useSettingsStore(state => state.reducedMotion);
 export const useEnableHourlyNotifications = (): boolean => useSettingsStore(state => state.enableHourlyNotifications);
 export const useNotificationFrequency = (): Settings['notificationFrequency'] => useSettingsStore(state => state.notificationFrequency);
 export const useNotificationSound = (): boolean => useSettingsStore(state => state.notificationSound);
@@ -24,6 +26,8 @@ export const useToggleProgressBars = () => useSettingsStore(state => state.toggl
 export const useToggleDayContext = () => useSettingsStore(state => state.toggleDayContext);
 export const useToggle24HourEarth = () => useSettingsStore(state => state.toggle24HourEarth);
 export const useToggleAppBadge = () => useSettingsStore(state => state.toggleAppBadge);
+export const useToggleAnalytics = () => useSettingsStore(state => state.toggleAnalytics);
+export const useToggleReducedMotion = () => useSettingsStore(state => state.toggleReducedMotion);
 export const useToggleHourlyNotifications = () => useSettingsStore(state => state.toggleHourlyNotifications);
 export const useSetNotificationFrequency = () => useSettingsStore(state => state.setNotificationFrequency);
 export const useToggleNotificationSound = () => useSettingsStore(state => state.toggleNotificationSound);

@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useReducedMotion } from '../stores/settingsSelectors';
 import { X, AlarmClock, Plus } from 'lucide-react';
 import { useAlarmsStore } from '../stores/alarmsStore';
 import { useWakeLock } from '../hooks/useWakeLock';
-import { useOptimizedNotifications } from '../hooks/useOptimizedNotifications';
 import { AlarmCard } from './AlarmCard';
 import { AlarmForm } from './AlarmForm';
 import { useViewport } from '../hooks/useViewport';
+import { requestBackgroundAlarmPermission, syncAlarmsToServiceWorker } from '../utils/serviceWorkerAlarms';
+import { startBackgroundAlarmSync, stopBackgroundAlarmSync } from '../utils/backgroundAlarmSync';
 
 interface AlarmManagerProps {
   isOpen: boolean;
@@ -15,11 +17,11 @@ interface AlarmManagerProps {
 
 export function AlarmManager({ isOpen, onClose }: AlarmManagerProps) {
   const { isMobile } = useViewport();
+  const reducedMotion = useReducedMotion();
   const { alarms, addAlarm, updateAlarm, deleteAlarm, toggleAlarm, markAsTriggered } = useAlarmsStore();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const { isWakeLockActive, requestWakeLock, setShouldReacquire } = useWakeLock();
-  const { sendNotification } = useOptimizedNotifications();
 
   const handleEdit = (id: string) => {
     setEditingId(id);
@@ -31,6 +33,22 @@ export function AlarmManager({ isOpen, onClose }: AlarmManagerProps) {
     setEditingId(null);
   };
 
+  useEffect(() => {
+    // Request background alarm permission and start sync when component mounts
+    if (isOpen && alarms.length > 0) {
+      requestBackgroundAlarmPermission();
+      syncAlarmsToServiceWorker(alarms);
+      startBackgroundAlarmSync();
+    }
+    
+    return () => {
+      // Clean up when component unmounts
+      if (!isOpen) {
+        stopBackgroundAlarmSync();
+      }
+    };
+  }, [isOpen, alarms.length]);
+
   const handleToggle = (id: string) => {
     toggleAlarm(id);
     
@@ -39,88 +57,13 @@ export function AlarmManager({ isOpen, onClose }: AlarmManagerProps) {
     if (hasActiveAlarms && !isWakeLockActive) {
       setShouldReacquire(true);
       requestWakeLock();
+      // Request background permission for locked screen alarms
+      requestBackgroundAlarmPermission();
     } else if (!hasActiveAlarms && isWakeLockActive) {
       setShouldReacquire(false);
     }
   };
 
-  // Check for due alarms
-  useEffect(() => {
-    const checkAlarms = () => {
-      const now = new Date();
-      alarms.forEach(alarm => {
-        if (alarm.enabled && !alarm.triggered) {
-          const alarmTime = new Date();
-          const [hours, minutes] = alarm.time.split(':').map(Number);
-          alarmTime.setHours(hours, minutes, 0, 0);
-          
-          // Check if alarm should trigger (within 1 minute window)
-          if (Math.abs(now.getTime() - alarmTime.getTime()) < 60000) {
-            triggerAlarm(alarm);
-          }
-        }
-      });
-    };
-
-    const interval = setInterval(checkAlarms, 30000); // Check every 30 seconds
-    return () => clearInterval(interval);
-  }, [alarms]);
-
-  const triggerAlarm = async (alarm: any) => {
-    try {
-      // Mark as triggered
-      markAsTriggered(alarm.id);
-      
-      // Request wake lock if not active
-      if (!isWakeLockActive) {
-        setShouldReacquire(true);
-        requestWakeLock();
-      }
-      
-      // Send notification
-      await sendNotification('DECHA Alarm', {
-        body: alarm.label || `Alarm at ${alarm.time}`,
-        icon: '/icon-192.png',
-        badge: '/icon-192.png',
-        tag: `alarm-${alarm.id}`,
-        requireInteraction: true,
-        vibrate: [200, 100, 200],
-        actions: [
-          {
-            action: 'dismiss',
-            title: 'Dismiss'
-          },
-          {
-            action: 'snooze',
-            title: 'Snooze (5 min)'
-          }
-        ]
-      });
-      
-      // Play sound if enabled
-      if (alarm.sound) {
-        playAlarmSound();
-      }
-    } catch (error) {
-      console.error('Failed to trigger alarm:', error);
-    }
-  };
-
-  const playAlarmSound = () => {
-    // Create a simple beep sound
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    
-    oscillator.start();
-    oscillator.stop(audioContext.currentTime + 0.5);
-  };
 
   return (
     <AnimatePresence>
@@ -135,20 +78,25 @@ export function AlarmManager({ isOpen, onClose }: AlarmManagerProps) {
           />
           
           <motion.div
-            initial={{ opacity: 0, x: 300 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 300 }}
-            transition={{ type: 'spring', damping: 25 }}
-            className={`fixed right-0 top-0 h-full bg-decha-slate border-l border-white/10 z-50 overflow-y-auto ${
+            initial={reducedMotion ? { opacity: 0 } : { opacity: 0, x: 300 }}
+            animate={reducedMotion ? { opacity: 1 } : { opacity: 1, x: 0 }}
+            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: 300 }}
+            transition={reducedMotion ? { duration: 0.15 } : { type: 'spring', damping: 25 }}
+            role="dialog" aria-modal="true" aria-labelledby="alarms-title" tabIndex={-1}
+            className={`fixed right-0 top-0 h-full h-dvh bg-black/95 backdrop-blur-2xl border-l border-white/5 z-50 overflow-y-auto ${
               isMobile ? 'w-full' : 'w-full max-w-md'
             }`}
+            style={{
+              paddingTop: 'env(safe-area-inset-top)',
+              paddingBottom: 'env(safe-area-inset-bottom)',
+            }}
           >
             <div className="p-4 sm:p-6 space-y-6">
               {/* Header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <AlarmClock className="w-6 h-6 text-decha-blue" />
-                  <h2 className="text-2xl font-bold text-white">Alarms</h2>
+                  <h2 id="alarms-title" className="text-2xl font-bold text-white">Alarms</h2>
                 </div>
                 <button
                   onClick={onClose}
@@ -158,15 +106,17 @@ export function AlarmManager({ isOpen, onClose }: AlarmManagerProps) {
                 </button>
               </div>
 
-              {/* Add Button */}
+              {/* Add Button - Apple style */}
               {!showForm && (
-                <button
+                <motion.button
                   onClick={() => setShowForm(true)}
-                  className="w-full flex items-center justify-center gap-2 p-4 bg-decha-blue hover:bg-decha-blue/80 rounded-xl transition-colors"
+                  className="w-full flex items-center justify-center gap-2 p-4 bg-white/10 hover:bg-white/15 rounded-2xl transition-all backdrop-blur-sm border border-white/10"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   <Plus className="w-5 h-5 text-white" />
-                  <span className="text-white font-semibold">New Alarm</span>
-                </button>
+                  <span className="text-white font-medium text-base">New Alarm</span>
+                </motion.button>
               )}
 
               {/* Alarm Form */}

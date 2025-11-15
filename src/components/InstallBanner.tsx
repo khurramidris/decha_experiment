@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useReducedMotion } from '../stores/settingsSelectors';
 import { Download, X } from 'lucide-react';
 import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import { analytics, AnalyticsEvents } from '../analytics';
 
 export function InstallBanner() {
+  const reducedMotion = useReducedMotion();
   const { isInstallable, isInstalled, promptInstall } = useInstallPrompt();
   const [isDismissed, setIsDismissed] = useState(false);
   const [dismissCount, setDismissCount] = useState(0);
@@ -55,10 +57,10 @@ export function InstallBanner() {
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 100, opacity: 0 }}
-        transition={{ type: 'spring', damping: 25 }}
+        initial={reducedMotion ? { opacity: 0 } : { y: 100, opacity: 0 }}
+        animate={reducedMotion ? { opacity: 1 } : { y: 0, opacity: 1 }}
+        exit={reducedMotion ? { opacity: 0 } : { y: 100, opacity: 0 }}
+        transition={reducedMotion ? { duration: 0.15 } : { type: 'spring', damping: 25 }}
         className="fixed bottom-6 left-6 right-6 md:left-auto md:right-6 md:w-96 z-50 safe-bottom"
       >
         <div className="bg-decha-slate border border-decha-blue/50 rounded-2xl p-4 shadow-2xl backdrop-blur-xl">

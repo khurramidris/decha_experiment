@@ -43,38 +43,54 @@ export const TimeDisplay = memo(function TimeDisplay({ time, format }: TimeDispl
   };
 
   return (
-    <div className="flex flex-col items-center gap-2 sm:gap-4">
+    <div className="flex flex-col items-center gap-3 sm:gap-5 px-4 w-full max-w-full">
       {showStandard && (
-        <div 
-          className="font-mono font-bold tracking-tight leading-tight"
-          style={{ fontSize: getTimeFontSize() }}
+        <motion.div 
+          className="font-mono font-bold tracking-tighter leading-none"
+          style={{ 
+            fontSize: getTimeFontSize(),
+            fontFeatureSettings: '"tnum"', // Tabular numbers for consistent width
+          }}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
         >
-          <span className="text-decha-blue">{time.hours}</span>
-          <span className="text-white/50">:</span>
-          <span className="text-decha-cyan">{time.minutes.toString().padStart(2, '0')}</span>
-          <span className="text-white/50">:</span>
-          <span className="text-decha-purple">{time.seconds.toString().padStart(2, '0')}</span>
-        </div>
+          <span className="text-white" style={{ textShadow: '0 2px 20px rgba(255, 255, 255, 0.1)' }}>
+            {time.hours}
+          </span>
+          <span className="text-white/30 mx-1">:</span>
+          <span className="text-white" style={{ textShadow: '0 2px 20px rgba(255, 255, 255, 0.1)' }}>
+            {time.minutes.toString().padStart(2, '0')}
+          </span>
+          <span className="text-white/30 mx-1">:</span>
+          <span className="text-white" style={{ textShadow: '0 2px 20px rgba(255, 255, 255, 0.1)' }}>
+            {time.seconds.toString().padStart(2, '0')}
+          </span>
+        </motion.div>
       )}
 
       {showPercentage && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="font-mono text-white/70"
-          style={{ fontSize: getPercentageFontSize() }}
+          transition={{ delay: 0.1, duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+          className="font-mono text-white/60"
+          style={{ fontSize: getPercentageFontSize(), fontWeight: 500 }}
         >
-          {dechaDecimal} <span className="text-white/40">DECHA</span>
+          {dechaDecimal} <span className="text-white/35 text-sm">DECHA</span>
         </motion.div>
       )}
 
       {showStandard && (
-        <div 
-          className="text-white/40 font-mono"
-          style={{ fontSize: getInfoFontSize() }}
+        <motion.div 
+          className="text-white/45 font-sans text-sm sm:text-base"
+          style={{ fontSize: getInfoFontSize(), fontWeight: 400 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.4 }}
         >
           {time.percentage.toFixed(2)}% of day complete
-        </div>
+        </motion.div>
       )}
     </div>
   );

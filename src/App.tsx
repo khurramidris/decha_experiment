@@ -11,6 +11,7 @@ import {
   useUse24HourEarth, 
   useEnableAppBadge, 
   useEnableHourlyNotifications, 
+  useEnableAnalytics,
   useToggleEarthTime 
 } from './stores/selectors';
 import { useAppBadge } from './hooks/useAppBadge';
@@ -19,6 +20,9 @@ import { useNotifications } from './hooks/useNotifications';
 import { useStats } from './hooks/useStats';
 import { useShare } from './hooks/useShare';
 import { requestNotificationPermission } from './utils/notifications';
+import { analytics } from './analytics';
+import { startBackgroundAlarmSync } from './utils/backgroundAlarmSync';
+import { useAlarmsStore } from './stores/alarmsStore';
 import { Header } from './components/Header';
 import { TimeDisplay } from './components/TimeDisplay';
 import { ProgressBars } from './components/ProgressBars';
@@ -38,12 +42,13 @@ const StatsPanel = lazy(() => import('./components/StatsPanel').then(module => (
 const KeyboardHelp = lazy(() => import('./components/KeyboardHelp').then(module => ({ default: module.KeyboardHelp })));
 const MultiTimezoneConverter = lazy(() => import('./components/MultiTimezoneConverter').then(module => ({ default: module.MultiTimezoneConverter })));
 
+// Apple-inspired theme backgrounds - subtle, elegant gradients
 const themeBackgrounds = {
-  navy: 'bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900',
-  sunset: 'bg-gradient-to-br from-orange-600 via-pink-600 to-purple-700',
-  matrix: 'bg-gradient-to-br from-green-950 via-emerald-900 to-green-950',
-  cosmic: 'bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900',
-  minimal: 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900',
+  navy: 'bg-gradient-to-br from-black via-gray-950 to-black',
+  sunset: 'bg-gradient-to-br from-orange-950/50 via-pink-950/30 to-purple-950/50',
+  matrix: 'bg-gradient-to-br from-green-950/40 via-emerald-950/20 to-green-950/40',
+  cosmic: 'bg-gradient-to-br from-purple-950/50 via-indigo-950/30 to-blue-950/50',
+  minimal: 'bg-gradient-to-br from-gray-950 via-black to-gray-950',
 };
 
 type ModalType = 'settings' | 'converter' | 'alarms' | 'calendar' | 'stats' | 'help' | 'multi-timezone' | null;
@@ -60,12 +65,29 @@ function App() {
   const showDayContext = useShowDayContext();
   const use24HourEarth = useUse24HourEarth();
   const enableAppBadge = useEnableAppBadge();
+  const enableAnalytics = useEnableAnalytics();
   const enableHourlyNotifications = useEnableHourlyNotifications();
   const toggleEarthTime = useToggleEarthTime();
 
+  const alarms = useAlarmsStore(state => state.alarms);
+  
   useAppBadge(dechaTime.hours, enableAppBadge);
   useNotifications(dechaTime);
   useStats();
+  
+  // Start background alarm sync if there are enabled alarms
+  useEffect(() => {
+    const hasEnabledAlarms = alarms.some(alarm => alarm.enabled);
+    if (hasEnabledAlarms) {
+      startBackgroundAlarmSync();
+    }
+  }, [alarms]);
+
+  useEffect(() => {
+    if (enableAnalytics) {
+      analytics.initialize();
+    }
+  }, [enableAnalytics]);
 
   useEffect(() => {
     if (enableHourlyNotifications) {
@@ -74,6 +96,33 @@ function App() {
   }, [enableHourlyNotifications]);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const action = params.get('action');
+    if (action) {
+      switch (action) {
+        case 'alarm':
+          setActiveModal('alarms');
+          break;
+        case 'converter':
+          setActiveModal('converter');
+          break;
+        case 'settings':
+          setActiveModal('settings');
+          break;
+        case 'calendar':
+          setActiveModal('calendar');
+          break;
+        case 'stats':
+          setActiveModal('stats');
+          break;
+        case 'multi-timezone':
+          setActiveModal('multi-timezone');
+          break;
+        case 'help':
+          setActiveModal('help');
+          break;
+      }
+    }
     if (activeModal) {
       document.body.classList.add('modal-open');
       const scrollY = window.scrollY;
@@ -108,8 +157,8 @@ function App() {
   });
 
   return (
-    <div className={`min-h-screen ${themeBackgrounds[theme]} transition-colors duration-1000 safe-area`}>
-      <div className="min-h-screen backdrop-blur-3xl flex flex-col safe-area">
+    <div className={`min-h-screen min-h-dvh ${themeBackgrounds[theme]} transition-colors duration-1000`}>
+      <div className="min-h-screen min-h-dvh backdrop-blur-3xl flex flex-col w-full max-w-full overflow-x-hidden">
         <Header
           onSettingsClick={() => setActiveModal('settings')}
           onConverterClick={() => setActiveModal('converter')}
@@ -120,7 +169,7 @@ function App() {
           onHelpClick={() => setActiveModal('help')}
         />
 
-        <main className="flex-1 flex flex-col items-center justify-center gap-8 p-6">
+        <main className="flex-1 flex flex-col items-center justify-center gap-6 sm:gap-8 p-4 sm:p-6 w-full max-w-full overflow-x-hidden">
           <TimeDisplay time={dechaTime} format={displayFormat} />
 
           <div className="flex flex-wrap gap-3 justify-center">

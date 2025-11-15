@@ -3,7 +3,7 @@ import { useAlarmsStore } from '../stores/alarmsStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useStatsStore } from '../stores/statsStore';
 import { DechaTime } from '../types/decha';
-import { showNotification, isQuietHours } from '../utils/notifications';
+import { showNotification, isQuietHours, playAlarmBeep } from '../utils/notifications';
 import { getDayPeriod, getDayPeriodDescription } from '../utils/dechaCalculations';
 
 export function useNotifications(currentTime: DechaTime) {
@@ -94,6 +94,10 @@ export function useNotifications(currentTime: DechaTime) {
           tag: `alarm-${alarm.id}`,
           requireInteraction: true,
         });
+
+        if (notificationSound) {
+          playAlarmBeep();
+        }
 
         markTriggered(alarm.id);
         incrementFeature('alarmsTriggered');

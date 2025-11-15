@@ -10,6 +10,8 @@ interface SettingsState extends Settings {
   toggleDayContext: () => void;
   toggle24HourEarth: () => void;
   toggleAppBadge: () => void;
+  toggleAnalytics: () => void;
+  toggleReducedMotion: () => void;
   toggleHourlyNotifications: () => void;
   setNotificationFrequency: (frequency: Settings['notificationFrequency']) => void;
   toggleNotificationSound: () => void;
@@ -27,6 +29,8 @@ const defaultSettings: Settings = {
   showDayContext: true,
   use24HourEarth: true,
   enableAppBadge: true,
+  enableAnalytics: true,
+  reducedMotion: false,
   enableHourlyNotifications: false,
   notificationFrequency: 'every-hour',
   notificationSound: true,
@@ -56,6 +60,12 @@ export const useSettingsStore = create<SettingsState>()(
       toggleAppBadge: () => set((state) => ({
         enableAppBadge: !state.enableAppBadge
       })),
+      toggleAnalytics: () => set((state) => ({
+        enableAnalytics: !state.enableAnalytics
+      })),
+      toggleReducedMotion: () => set((state) => ({
+        reducedMotion: !state.reducedMotion
+      })),
       toggleHourlyNotifications: () => set((state) => ({
         enableHourlyNotifications: !state.enableHourlyNotifications
       })),
@@ -76,6 +86,15 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'decha-settings',
+      version: 1,
+      migrate: (persistedState: any) => ({
+        ...defaultSettings,
+        ...persistedState,
+        enableAnalytics:
+          persistedState && typeof persistedState.enableAnalytics === 'boolean'
+            ? persistedState.enableAnalytics
+            : defaultSettings.enableAnalytics,
+      }),
     }
   )
 );

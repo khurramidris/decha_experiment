@@ -2,17 +2,32 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 import { Alarm } from '../types/alarm';
+import { syncAlarmsToServiceWorker } from '../utils/serviceWorkerAlarms';
 
-export interface Alarm {
-  id: string;
-  label: string;
-  time: string; // HH:MM format
-  enabled: boolean;
-  sound: boolean;
-  repeat: string[]; // e.g., ['mon', 'tue', 'wed']
-  createdAt: Date;
-  triggered: boolean;
-  lastTriggered?: Date;
+/**
+ * Adds minutes to a Decha time
+ */
+function addMinutesToDechaTime(
+  dechaTime: { hours: number; minutes: number; seconds: number },
+  minutesToAdd: number
+): { hours: number; minutes: number; seconds: number } {
+  let totalSeconds = dechaTime.hours * 10000 + dechaTime.minutes * 100 + dechaTime.seconds;
+  totalSeconds += minutesToAdd * 100; // Add minutes (each minute = 100 seconds in Decha)
+  
+  // Handle overflow
+  const maxSeconds = 100000; // 10 hours * 10000 seconds/hour
+  if (totalSeconds >= maxSeconds) {
+    totalSeconds = totalSeconds % maxSeconds;
+  }
+  if (totalSeconds < 0) {
+    totalSeconds = maxSeconds + totalSeconds;
+  }
+  
+  const hours = Math.floor(totalSeconds / 10000);
+  const minutes = Math.floor((totalSeconds % 10000) / 100);
+  const seconds = totalSeconds % 100;
+  
+  return { hours, minutes, seconds };
 }
 
 interface AlarmsState {
@@ -34,8 +49,8 @@ export const useAlarmsStore = create<AlarmsState>()(
     (set, get) => ({
       alarms: [],
       
-      addAlarm: (alarm) => set((state) => ({
-        alarms: [...state.alarms, {
+      addAlarm: (alarm) => {
+        const newAlarms = [...get().alarms, {
           ...alarm,
           id: uuidv4(),
           createdAt: Date.now(),
@@ -44,30 +59,50 @@ export const useAlarmsStore = create<AlarmsState>()(
           const aTime = a.dechaTime.hours * 10000 + a.dechaTime.minutes * 100 + a.dechaTime.seconds;
           const bTime = b.dechaTime.hours * 10000 + b.dechaTime.minutes * 100 + b.dechaTime.seconds;
           return aTime - bTime;
-        })
-      })),
+        });
+        
+        // Sync to service worker for background alarms
+        syncAlarmsToServiceWorker(newAlarms);
+        
+        set({ alarms: newAlarms });
+      },
       
-      updateAlarm: (id, updates) => set((state) => ({
-        alarms: state.alarms.map(alarm =>
+      updateAlarm: (id, updates) => {
+        const updatedAlarms = get().alarms.map(alarm =>
           alarm.id === id ? { ...alarm, ...updates } : alarm
-        )
-      })),
+        );
+        
+        // Sync to service worker
+        syncAlarmsToServiceWorker(updatedAlarms);
+        
+        set({ alarms: updatedAlarms });
+      },
       
-      deleteAlarm: (id) => set((state) => ({
-        alarms: state.alarms.filter(alarm => alarm.id !== id)
-      })),
+      deleteAlarm: (id) => {
+        const filteredAlarms = get().alarms.filter(alarm => alarm.id !== id);
+        
+        // Sync to service worker
+        syncAlarmsToServiceWorker(filteredAlarms);
+        
+        set({ alarms: filteredAlarms });
+      },
       
-      toggleAlarm: (id) => set((state) => ({
-        alarms: state.alarms.map(alarm =>
+      toggleAlarm: (id) => {
+        const toggledAlarms = get().alarms.map(alarm =>
           alarm.id === id ? { ...alarm, enabled: !alarm.enabled } : alarm
-        )
-      })),
+        );
+        
+        // Sync to service worker
+        syncAlarmsToServiceWorker(toggledAlarms);
+        
+        set({ alarms: toggledAlarms });
+      },
       
       snoozeAlarm: (id, minutes) => set((state) => ({
         alarms: state.alarms.map(alarm =>
           alarm.id === id ? {
             ...alarm,
-            time: addMinutesToTime(alarm.time, minutes),
+            dechaTime: addMinutesToDechaTime(alarm.dechaTime, minutes),
             triggered: false
           } : alarm
         )
@@ -86,7 +121,7 @@ export const useAlarmsStore = create<AlarmsState>()(
       markAsTriggered: (id) => set((state) => ({
         alarms: state.alarms.map(alarm =>
           alarm.id === id
-            ? { ...alarm, triggered: true, lastTriggered: new Date() }
+            ? { ...alarm, lastTriggered: Date.now() }
             : alarm
         )
       })),

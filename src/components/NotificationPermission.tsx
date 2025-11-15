@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, X, Settings } from 'lucide-react';
-import { requestNotificationPermission } from '../utils/serviceWorker';
+import { requestNotificationPermission } from '../utils/notifications';
 
 export function NotificationPermission() {
   const [showPrompt, setShowPrompt] = useState(false);

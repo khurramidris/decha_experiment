@@ -10,17 +10,18 @@ const DECHA_SECOND_IN_EARTH_SECONDS = SECONDS_PER_EARTH_DAY / SECONDS_PER_DECHA_
  * Converts Earth seconds since midnight to DECHA time
  */
 export function earthSecondsToDechaTime(earthSeconds: number): DechaTime {
-  // Calculate total DECHA seconds since midnight
-  const totalDechaSeconds = Math.floor(earthSeconds / DECHA_SECOND_IN_EARTH_SECONDS);
-  
+  // Calculate total DECHA seconds since midnight (precise)
+  const dechaSecondsPrecise = earthSeconds / DECHA_SECOND_IN_EARTH_SECONDS;
+  const totalDechaSeconds = Math.floor(dechaSecondsPrecise);
+
   // Calculate DECHA components
   const hours = Math.floor(totalDechaSeconds / 10000);
   const minutes = Math.floor((totalDechaSeconds % 10000) / 100);
   const seconds = Math.floor(totalDechaSeconds % 100);
-  
-  // Calculate percentage of day completed
-  const percentage = (totalDechaSeconds / SECONDS_PER_DECHA_DAY) * 100;
-  
+
+  // Calculate percentage of day completed (smooth)
+  const percentage = (dechaSecondsPrecise / SECONDS_PER_DECHA_DAY) * 100;
+
   return {
     hours,
     minutes,
@@ -47,7 +48,12 @@ export function getCurrentEarthTime(): EarthTime {
  */
 export function getEarthSecondsSinceMidnight(): number {
   const now = new Date();
-  return now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+  return (
+    now.getHours() * 3600 +
+    now.getMinutes() * 60 +
+    now.getSeconds() +
+    now.getMilliseconds() / 1000
+  );
 }
 
 /**
